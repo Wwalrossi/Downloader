@@ -44,19 +44,19 @@ http_downloader_example_two.exe
 Вы можете изменить настройки загрузки , такие как количество параллельных подключений, размер блока и ограничение скорости, в исходном коде перед компиляцией. Вот основные параметры, которые можно изменить:
 
 Размер блока (chunk_size): Размер каждого блока данных при загрузке.<br>
-Количество параллельных подключений (download_connection_count): Количество одновременных соединений для загрузки.
-Ограничение скорости (DownloadSpeedLimiterExtension): Установить максимальную скорость загрузки в байтах в секунду.
-Пример изменения настроек в коде:
+Количество параллельных подключений (download_connection_count): Количество одновременных соединений для загрузки.<br>
+Ограничение скорости (DownloadSpeedLimiterExtension): Установить максимальную скорость загрузки в байтах в секунду.<br>
+Пример изменения настроек в коде:<br>
 
 
-HttpDownloaderBuilder::new(test_url.clone(), save_dir)
-    .chunk_size(NonZeroUsize::new(1024 * 1024 * 10).unwrap()) // Размер блока
+HttpDownloaderBuilder::new(test_url.clone(), save_dir)<br>
+    .chunk_size(NonZeroUsize::new(1024 * 1024 * 10).unwrap()) // Размер блока<br>
     .download_connection_count(NonZeroU8::new(3).unwrap())    // Количество параллельных подключений
-    .build((
-        DownloadStatusTrackerExtension { log: true },       // Отслеживание статуса загрузки
-        DownloadSpeedTrackerExtension { log: true },       // Отслеживание скорости загрузки
-        DownloadSpeedLimiterExtension::new(None),          // Ограничение скорости загрузки
+    .build((<br>
+        DownloadStatusTrackerExtension { log: true },       // Отслеживание статуса загрузки<br>
+        DownloadSpeedTrackerExtension { log: true },       // Отслеживание скорости загрузки<br>
+        DownloadSpeedLimiterExtension::new(None),          // Ограничение скорости загрузки<br>
         DownloadBreakpointResumeExtension {
-            download_archiver_builder: BsonFileArchiverBuilder::new(ArchiveFilePath::Suffix("bson".to_string()))
-        }
+            download_archiver_builder: BsonFileArchiverBuilder::new(ArchiveFilePath::Suffix("bson".to_string()))<br>
+        }<br>
     ));
