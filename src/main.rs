@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let test_url = Url::parse("https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q3_K_S.gguf")?;
     let (mut downloader, (status_state, speed_state, speed_limiter, ..)) =
         HttpDownloaderBuilder::new(test_url.clone(), save_dir)
-            .chunk_size(NonZeroUsize::new(1024 * 1024 * 10).unwrap()) // Размер блока
+            .chunk_size(NonZeroUsize::new(1024 * 1024 * 10).unwrap()) // block size
             .download_connection_count(NonZeroU8::new(3).unwrap())    // Количество параллельных подключений
             .build((
                 DownloadStatusTrackerExtension { log: true },       // Отслеживание статуса загрузки
