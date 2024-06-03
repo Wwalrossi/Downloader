@@ -62,12 +62,14 @@ async fn main() -> Result<()> {
             }
 
             let mut last_print_time = Instant::now();
+            let mut last_percent_done = 0; // Переменная для хранения последнего процента
             while downloaded_len_receiver.changed().await.is_ok() {
                 let progress = *downloaded_len_receiver.borrow();
                 if let Some(total_len) = total_len {
-                    let percent_done = progress as f64 / total_len.get() as f64 * 100.0;
-                    if percent_done >= 0.1 && last_print_time.elapsed() >= Duration::from_secs(1) {
-                        pb.set_message(format!("Прогресс загрузки: {:.2}% ({}/{})", percent_done, progress, total_len.get()));
+                    let percent_done = (progress as f64 / total_len.get() as f64 * 100.0).round() as i64; // Округление до целого числа
+                    if percent_done > last_percent_done {
+                        pb.set_message(format!("Прогресс загрузки: {}% ({}/{})", percent_done, progress, total_len.get()));
+                        last_percent_done = percent_done; // Обновление последнего процента
                         last_print_time = Instant::now();
                     }
                 }
