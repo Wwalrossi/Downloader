@@ -234,6 +234,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "downloader"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "http-downloader",
+ "indicatif",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "encode_unicode"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -496,17 +507,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "url",
-]
-
-[[package]]
-name = "http_downloader_example_two"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "http-downloader",
- "indicatif",
- "tokio",
  "url",
 ]
 
