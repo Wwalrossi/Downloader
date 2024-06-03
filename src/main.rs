@@ -1,36 +1,38 @@
 use std::num::{NonZeroU8, NonZeroUsize};
 use std::path::PathBuf;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use anyhow::Result;
 use indicatif::{ProgressBar, ProgressStyle};
 use tokio::time::sleep;
 use url::Url;
 
-use http_downloader::{
-    breakpoint_resume::DownloadBreakpointResumeExtension,
-    HttpDownloaderBuilder,
-    speed_tracker::DownloadSpeedTrackerExtension,
-    status_tracker::DownloadStatusTrackerExtension,
-};
 use http_downloader::bson_file_archiver::{ArchiveFilePath, BsonFileArchiverBuilder};
 use http_downloader::speed_limiter::DownloadSpeedLimiterExtension;
+use http_downloader::{
+    breakpoint_resume::DownloadBreakpointResumeExtension,
+    speed_tracker::DownloadSpeedTrackerExtension, status_tracker::DownloadStatusTrackerExtension,
+    HttpDownloaderBuilder,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let save_dir = PathBuf::from("C:/download");
-    let test_url = Url::parse("https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q3_K_S.gguf")?;
+    let test_url =
+        Url::parse("https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q3_K_S.gguf")?;
     let (mut downloader, (status_state, speed_state, speed_limiter, ..)) =
         HttpDownloaderBuilder::new(test_url.clone(), save_dir)
             .chunk_size(NonZeroUsize::new(1024 * 1024 * 10).unwrap()) // block size
-            .download_connection_count(NonZeroU8::new(3).unwrap())    // Количество параллельных подключений
+            .download_connection_count(NonZeroU8::new(3).unwrap()) // Количество параллельных подключений
             .build((
-                DownloadStatusTrackerExtension { log: true },       // Отслеживание статуса загрузки
-                DownloadSpeedTrackerExtension { log: true },       // Отслеживание скорости загрузки
-                DownloadSpeedLimiterExtension::new(None),          // Ограничение скорости загрузки
+                DownloadStatusTrackerExtension { log: true }, // Отслеживание статуса загрузки
+                DownloadSpeedTrackerExtension { log: true },  // Отслеживание скорости загрузки
+                DownloadSpeedLimiterExtension::new(None),     // Ограничение скорости загрузки
                 DownloadBreakpointResumeExtension {
-                    download_archiver_builder: BsonFileArchiverBuilder::new(ArchiveFilePath::Suffix("bson".to_string()))
-                }
+                    download_archiver_builder: BsonFileArchiverBuilder::new(
+                        ArchiveFilePath::Suffix("bson".to_string()),
+                    ),
+                },
             ));
 
     println!("Подготовка к загрузке");
@@ -58,19 +60,25 @@ async fn main() -> Result<()> {
         async move {
             let total_len = total_size_future.await;
             if let Some(total_len) = total_len {
-                pb.set_message(format!("Общий размер: {:.2} Мб", total_len.get() as f64 / 1024_f64 / 1024_f64));
+                pb.set_message(format!(
+                    "Общий размер: {:.2} Мб",
+                    total_len.get() as f64 / 1024_f64 / 1024_f64
+                ));
             }
 
-            let mut last_print_time = Instant::now();
-            let mut last_percent_done = 0; // Переменная для хранения последнего процента
+            let mut last_percent_done = 0;
             while downloaded_len_receiver.changed().await.is_ok() {
                 let progress = *downloaded_len_receiver.borrow();
                 if let Some(total_len) = total_len {
-                    let percent_done = (progress as f64 / total_len.get() as f64 * 100.0).round() as i64; // Округление до целого числа
+                    let percent_done = (progress * 100 / total_len.get()) as u32;
                     if percent_done > last_percent_done {
-                        pb.set_message(format!("Прогресс загрузки: {}% ({}/{})", percent_done, progress, total_len.get()));
-                        last_percent_done = percent_done; // Обновление последнего процента
-                        last_print_time = Instant::now();
+                        pb.set_message(format!(
+                            "Прогресс загрузки: {}% ({}/{})",
+                            percent_done,
+                            progress,
+                            total_len.get()
+                        ));
+                        last_percent_done = percent_done;
                     }
                 }
 
