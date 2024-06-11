@@ -44,13 +44,22 @@ async fn main() -> Result<()> {
     let _speed_receiver = speed_state.receiver; // Получение отслеживателя скорости загрузки
 
     // Создание прогресс-бара
-    let pb = ProgressBar::new_spinner();
-    pb.set_style(
-        ProgressStyle::default_spinner()
-            .tick_chars("⠁⠂⠄⡀⢀⣀⣤⣤⣤⣀⢀⡀⠄⠂⠁")
-            .template("{spinner:.green} [{elapsed}] {msg}"),
-    );
-    pb.enable_steady_tick(100);
+    let pb = ProgressBar::new(100);
+
+    let style = ProgressStyle::default_spinner()
+        .tick_chars("⠁⠂⠄⡀⢀⣀⣤⣤⣤⣀⢀⡀⠄⠂⠁")
+        .template("{spinner:.green} [{elapsed}] {msg}")
+        .expect("Failed to create progress style");
+
+    pb.set_style(style);
+
+    pb.enable_steady_tick(Duration::from_millis(100));
+
+    for i in 0..100 {
+        pb.inc(1);
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    pb.finish_with_message("done");
 
     // Печать прогресса загрузки
     tokio::spawn({
@@ -89,7 +98,7 @@ async fn main() -> Result<()> {
     });
 
     // Ограничение скорости загрузки
-    tokio::spawn(async move {
+    tokio::spawn(async move { 
         sleep(Duration::from_secs(2)).await;
         println!("Начало ограничения скорости");
         speed_limiter.change_speed(Some(1024 * 1024 * 2)).await;
