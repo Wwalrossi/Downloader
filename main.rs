@@ -19,7 +19,7 @@ use http_downloader::{
 async fn main() -> Result<()> {
     let save_dir = PathBuf::from("C:/download");
     let test_url =
-        Url::parse("https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q3_K_S.gguf")?;
+        Url::parse("https://")?;
     let (mut downloader, (status_state, speed_state, speed_limiter, ..)) =
         HttpDownloaderBuilder::new(test_url.clone(), save_dir)
             .chunk_size(NonZeroUsize::new(1024 * 1024 * 10).unwrap()) // block size
